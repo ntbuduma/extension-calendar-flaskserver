@@ -6,7 +6,7 @@ app = Flask(__name__)
 def hi():
     return "yo this works"
 
-@app.route("/add_event", methods=['GET', 'POST'])
+@app.route("/add_event", methods=['POST'])
 def add_event():
     request_data = request.get_data()
     return request_data
