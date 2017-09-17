@@ -14,6 +14,12 @@ SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'chrome-calendar-extension'
 
+def getTruncatedDateTime(dateTime):
+    """ Truncates a dateTime to the most recent midnight
+    """
+    return dateTime.split('T')[0]+"T00:00:00Z"
+
+
 def parseDateTimeString(dateTime):
     """ Returns a date and a time given the date time string
         The time could be an empty string
@@ -26,6 +32,16 @@ def parseDateTimeString(dateTime):
 
     date = date.split('-', 1)[1]
     return date, time
+
+"""
+def addEvent(credentials, ):
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('calendar', 'v3', http=http)
+
+    event = #TODO
+    eventsResult = service.events().insert(
+            calendarId='primary', body=event).execute()
+"""
 
 """ Compiles the next $num_events events in the calendar in 
     the format 
@@ -64,18 +80,29 @@ def getEventGrid(credentials):
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
-    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 10 events')
+    today = datetime.datetime.utcnow()
+    nextweek = today + datetime.timedelta(days = 7)
+    today = getTruncatedDateTime(today.isoformat())
+    nextweek = getTruncatedDateTime(nextweek.isoformat())
+
     eventsResult = service.events().list(
-        calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
+        calendarId='primary', timeMin=today, timeMax=nextweek, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
 
     if not events:
         print('No upcoming events found.')
-    for event in events:
+    output = {}
+    for idx, event in enumerate(events):
         start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
-
-
+        location = ""
+        if 'location' in event.keys():
+            location = event['location']
+        print(event['summary'], parseDateTimeString(start)[0], parseDateTimeString(start)[1], location)
+        output[idx] = {
+                'name': event['summary'],
+                'date': parseDateTimeString(start)[0],
+                'time': parseDateTimeString(start)[1],
+                'location': location,
+        }
 

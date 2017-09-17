@@ -36,7 +36,7 @@ def checkCredentials():
 @app.route('/add_event')
 def add_event():
     credentials = checkCredentials()
-    return "done"
+    return calendar_helper.getEventList(credentials)
 
 @app.route('/oauth2callback')
 def oauth2callback():
