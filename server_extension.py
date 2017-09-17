@@ -10,6 +10,7 @@ import datetime
 
 
 app = flask.Flask(__name__)
+app.secret_key = "secret_key"
 
 
 @app.route('/add_event')
