@@ -17,7 +17,7 @@ app.secret_key = "secret_key"
 def index():
     return "yo this works"
 
-def checkCredentials:
+def checkCredentials():
     if 'credentials' not in flask.session:
         return flask.redirect(flask.url_for('oauth2callback'))
     credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
@@ -31,7 +31,8 @@ def checkCredentials:
 
 @app.route('/add_event')
 def index():
-    credentials = checkCredentials
+    credentials = checkCredentials()
+    return "done"
 
 @app.route('/oauth2callback')
 def oauth2callback():
