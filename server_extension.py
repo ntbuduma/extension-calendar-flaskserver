@@ -8,6 +8,7 @@ import flask
 import httplib2
 
 from apiclient import discovery
+#python_client = __import__("google-api-python-client")
 from oauth2client import client
 
 import datetime
@@ -28,14 +29,27 @@ def checkCredentials():
     if credentials.access_token_expired:
         return flask.redirect(flask.url_for('oauth2callback'))
     else:
-        http_auth = credentials.authorize(httplib2.Http())
-        service = discovery.build('calendar', 'v3', http_auth)
+        service = discovery.build('calendar', 'v3', credentials=credentials)
     return credentials
 
 
 @app.route('/add_event')
 def add_event():
     credentials = checkCredentials()
+    service = discovery.build('calendar', 'v3', credentials=credentials)
+
+    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    print('Getting the upcoming 10 events')
+    eventsResult = service.events().list(
+        calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
+        orderBy='startTime').execute()
+    events = eventsResult.get('items', [])
+
+    if not events:
+        print('No upcoming events found.')
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        print(start, event['summary'])
     return "done"
 
 @app.route('/oauth2callback')
@@ -58,6 +72,7 @@ def oauth2callback():
 @app.route("/get_event_list", methods=['GET'])
 def get_event_list():
     credentials = checkCredentials()
+    print credentials
     return calendar_helper.getEventList(credentials)
 
 @app.route("/get_event_grid", methods=['GET'])
@@ -69,4 +84,3 @@ if __name__ == '__main__':
     app.secret_key = str(uuid.uuid4())
     app.debug = False
     app.run()
-
