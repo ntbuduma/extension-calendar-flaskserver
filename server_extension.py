@@ -14,6 +14,7 @@ from apiclient import discovery
 from oauth2client import client
 
 import datetime
+import parsedatetime
 import httplib2
 import os
 
@@ -23,6 +24,12 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 import datetime
+
+# If modifying these scopes, delete your previously saved credentials
+# at ~/.credentials/calendar-python-quickstart.json
+SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+APPLICATION_NAME = 'Google Calendar API Python Quickstart'
+CLIENT_SECRET_FILE = 'client_secret.json'
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -60,30 +67,33 @@ credentials = get_credentials()
 def index():
     return "yo this works"
 
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/calendar-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
-CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 @app.route('/add_event')
-def add_event():
+def add_event(credentials, input_string):
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
-    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 10 events')
-    eventsResult = service.events().list(
-        calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
-        orderBy='startTime').execute()
-    events = eventsResult.get('items', [])
-    ret = ""
-    if not events:
-        print('No upcoming events found.')
-    for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        ret += "{} {}\n".format(start, event['summary'])
-    return ret
+    eventName, eventDateTimeString = input_string.split('!')
+    startDateTimeString, endDateTimeString = eventDateTimeString.split('-')
+    cal = parsedatetime.Calendar()
+    start_time_struct = cal.parse(startDateTimeString)[0]
+    end_time_struct = cal.parse(endDateTimeString)[0]
+    startDateTime = datetime.datetime(*start_time_struct[:6])
+    endDateTime = datetime.datetime(*end_time_struct[:6])
+    
+    event = {
+      'summary' = eventName,
+      'start' : {
+        'dateTime': startDateTime.isoformat(),
+        'timeZone': 'America/New_York',
+      },
+      'end' : {
+        'dateTime': endDateTime.isoformat(),
+        'timeZone': 'America/New_York',
+      },
+    }
+    eventsResult = service.events().insert(
+      calendarId='primary', body=event).execute()
 
 @app.route('/oauth2callback')
 def oauth2callback():
