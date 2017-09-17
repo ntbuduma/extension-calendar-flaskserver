@@ -104,12 +104,15 @@ def oauth2callback():
 
 @app.route("/get_event_list", methods=['GET'])
 def get_event_list():
-    credentials = checkCredentials()
+    credentials = get_credentials()
     print(credentials)
     return calendar_helper.getEventList(credentials)
 
 @app.route("/get_event_grid", methods=['GET'])
 def get_event_grid():
+    credentials = get_credentials()
+    print(credentials)
+    return calendar_helper.getEventGrid(credentials)
     pass
 
 if __name__ == '__main__':
