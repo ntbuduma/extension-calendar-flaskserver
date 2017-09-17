@@ -30,7 +30,7 @@ def checkCredentials():
 
 
 @app.route('/add_event')
-def index():
+def add_event():
     credentials = checkCredentials()
     return "done"
 
