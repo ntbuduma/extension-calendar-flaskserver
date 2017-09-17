@@ -22,7 +22,7 @@ def index():
   else:
     http_auth = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http_auth)
-    
+
     '''now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')
     eventsResult = service.events().list(
@@ -39,7 +39,6 @@ def index():
 
 @app.route('/oauth2callback')
 def oauth2callback():
-  print "hi"
   flow = client.flow_from_clientsecrets(
       'client_secret.json',
       scope='https://www.googleapis.com/auth/calendar.readonly',
