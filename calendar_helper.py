@@ -79,19 +79,16 @@ def parseDateTimeString(dateTime):
     date = date.split('-', 1)[1]
     return date, time
 
-"""
-def addEvent(credentials, ):
+
+def addEvent(credentials):
+    pass
+    """
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
     event = #TODO
     eventsResult = service.events().insert(
             calendarId='primary', body=event).execute()
-"""
-
-""" Compiles the next $num_events events in the calendar in 
-    the format 
-        NAME DATE TIME LOCATION
     """
 
 def getEventList(credentials, num_events = 10):
