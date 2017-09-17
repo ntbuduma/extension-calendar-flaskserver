@@ -42,7 +42,7 @@ def oauth2callback():
   flow = client.flow_from_clientsecrets(
       'client_secret.json',
       scope='https://www.googleapis.com/auth/calendar.readonly',
-      redirect_uri='http://127.0.0.1:5000/oauth2callback')
+      redirect_uri='https://flask-extension-server.herokuapp.com/oauth2callback')
   if 'code' not in flask.request.args:
     auth_uri = flow.step1_get_authorize_url()
     return flask.redirect(auth_uri)
