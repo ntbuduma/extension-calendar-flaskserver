@@ -30,8 +30,7 @@ def oauth2callback():
   flow = client.flow_from_clientsecrets(
       'client_secret.json',
       scope='https://www.googleapis.com/auth/drive.metadata.readonly',
-      redirect_uri=flask.url_for('oauth2callback', _external=True),
-      include_granted_scopes=True)
+      redirect_uri=flask.url_for('oauth2callback', _external=True))
   if 'code' not in flask.request.args:
     auth_uri = flow.step1_get_authorize_url()
     return flask.redirect(auth_uri)
