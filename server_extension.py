@@ -57,7 +57,8 @@ def oauth2callback():
 
 @app.route("/get_event_list", methods=['GET'])
 def get_event_list():
-    return calendar_helper.getEventList(credentials);
+    credentials = checkCredentials()
+    return calendar_helper.getEventList(credentials)
 
 @app.route("/get_event_grid", methods=['GET'])
 def get_event_grid():
