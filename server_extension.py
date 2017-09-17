@@ -1,3 +1,4 @@
+from __future__ import print_function
 from flask import Flask
 from flask import request
 import calendar_helper
@@ -8,35 +9,65 @@ import flask
 import httplib2
 
 from apiclient import discovery
-#python_client = __import__("google-api-python-client")
 from oauth2client import client
 
 import datetime
+import httplib2
+import os
+
+from apiclient import discovery
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
+
+import datetime
+
+def get_credentials():
+    """Gets valid user credentials from storage.
+
+    If nothing has been stored, or if the stored credentials are invalid,
+    the OAuth2 flow is completed to obtain the new credentials.
+
+    Returns:
+        Credentials, the obtained credential.
+    """
+    home_dir = os.path.expanduser('~')
+    credential_dir = os.path.join(home_dir, '.credentials')
+    if not os.path.exists(credential_dir):
+        os.makedirs(credential_dir)
+    credential_path = os.path.join(credential_dir,
+                                   'calendar-python-quickstart.json')
+
+    store = Storage(credential_path)
+    credentials = store.get()
+    if not credentials or credentials.invalid:
+        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+        flow.user_agent = APPLICATION_NAME
+        if flags:
+            credentials = tools.run_flow(flow, store, flags)
+        else: # Needed only for compatibility with Python 2.6
+            credentials = tools.run(flow, store)
+        print('Storing credentials to ' + credential_path)
+    return credentials
 
 
 app = flask.Flask(__name__)
-app.secret_key = "secret_key"
-
+credentials = get_credentials()
 
 @app.route('/')
 def index():
     return "yo this works"
 
-def checkCredentials():
-    if 'credentials' not in flask.session:
-        return flask.redirect(flask.url_for('oauth2callback'))
-    credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
-    if credentials.access_token_expired:
-        return flask.redirect(flask.url_for('oauth2callback'))
-    else:
-        service = discovery.build('calendar', 'v3', credentials=credentials)
-    return credentials
-
+# If modifying these scopes, delete your previously saved credentials
+# at ~/.credentials/calendar-python-quickstart.json
+SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+CLIENT_SECRET_FILE = 'client_secret.json'
+APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 @app.route('/add_event')
 def add_event():
-    credentials = checkCredentials()
-    service = discovery.build('calendar', 'v3', credentials=credentials)
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('calendar', 'v3', http=http)
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')
@@ -44,13 +75,13 @@ def add_event():
         calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
-
+    ret = ""
     if not events:
         print('No upcoming events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
-    return "done"
+        ret += "{} {}\n".format(start, event['summary'])
+    return ret
 
 @app.route('/oauth2callback')
 def oauth2callback():
@@ -72,7 +103,7 @@ def oauth2callback():
 @app.route("/get_event_list", methods=['GET'])
 def get_event_list():
     credentials = checkCredentials()
-    print credentials
+    print(credentials)
     return calendar_helper.getEventList(credentials)
 
 @app.route("/get_event_grid", methods=['GET'])
