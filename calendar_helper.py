@@ -10,6 +10,11 @@ from oauth2client.file import Storage
 import numpy as np
 
 import datetime
+import parsedatetime
+
+import argparse
+parser = argparse.ArgumentParser(parents=[tools.argparser])
+flags = parser.parse_args()
 
 SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'client_secret.json'
@@ -81,15 +86,34 @@ def parseDateTimeString(dateTime):
     return date, time
 
 
-def addEvent(credentials):
-    pass
-    """
+def addEvent(credentials, input_string):
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
-    event = #TODO
+
+    eventName, eventDateTimeString = input_string.split('!')
+    startDateTimeString, endDateTimeString = eventDateTimeString.split(' to ')
+    cal = parsedatetime.Calendar()
+    start_time_struct = cal.parse(startDateTimeString)[0]
+    end_time_struct = cal.parse(endDateTimeString)[0]
+    startDateTime = datetime.datetime(*start_time_struct[:6])
+    endDateTime = datetime.datetime(*end_time_struct[:6])
+    
+    event = {
+        'summary': eventName,
+        'start' : {
+            'dateTime': startDateTime.isoformat(),
+            'timeZone': 'America/New_York',
+        },
+        
+        'end' : {
+            'dateTime': endDateTime.isoformat(),
+            'timeZone': 'America/New_York',
+        },
+    }
     eventsResult = service.events().insert(
-            calendarId='primary', body=event).execute()
-    """
+      calendarId='primary', body=event).execute()
+    return json.dumps(event)
+
 
 def getEventList(credentials, num_events = 10):
     http = credentials.authorize(httplib2.Http())

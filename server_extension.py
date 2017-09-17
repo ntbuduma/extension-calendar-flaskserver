@@ -68,32 +68,10 @@ def index():
     return "yo this works"
 
 
-@app.route('/add_event')
-def add_event(credentials, input_string):
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('calendar', 'v3', http=http)
-
-    eventName, eventDateTimeString = input_string.split('!')
-    startDateTimeString, endDateTimeString = eventDateTimeString.split('-')
-    cal = parsedatetime.Calendar()
-    start_time_struct = cal.parse(startDateTimeString)[0]
-    end_time_struct = cal.parse(endDateTimeString)[0]
-    startDateTime = datetime.datetime(*start_time_struct[:6])
-    endDateTime = datetime.datetime(*end_time_struct[:6])
-    
-    event = {
-      'summary' = eventName,
-      'start' : {
-        'dateTime': startDateTime.isoformat(),
-        'timeZone': 'America/New_York',
-      },
-      'end' : {
-        'dateTime': endDateTime.isoformat(),
-        'timeZone': 'America/New_York',
-      },
-    }
-    eventsResult = service.events().insert(
-      calendarId='primary', body=event).execute()
+@app.route('/add_event', methods=['POST'])
+def add_event():
+    credentials = get_credentials()
+    return calendar_helper.addEvent(credentials, request.get_data())
 
 @app.route('/oauth2callback')
 def oauth2callback():
@@ -123,7 +101,6 @@ def get_event_grid():
     credentials = get_credentials()
     print(credentials)
     return calendar_helper.getEventGrid(credentials)
-    pass
 
 if __name__ == '__main__':
     import uuid
