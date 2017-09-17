@@ -1,3 +1,7 @@
+from flask import Flask
+from flask import request
+import calendar_helper
+
 import json
 
 import flask
@@ -50,8 +54,18 @@ def oauth2callback():
         return flask.redirect(flask.url_for('index'))
 
 
+
+@app.route("/get_event_list", methods=['GET'])
+def get_event_list():
+    return calendar_helper.getEventList();
+
+@app.route("/get_event_grid", methods=['GET'])
+def get_event_grid():
+    pass
+
 if __name__ == '__main__':
     import uuid
     app.secret_key = str(uuid.uuid4())
     app.debug = False
     app.run()
+
