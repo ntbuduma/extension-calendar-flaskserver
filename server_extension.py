@@ -6,11 +6,13 @@ import httplib2
 from apiclient import discovery
 from oauth2client import client
 
+import datetime
+
 
 app = flask.Flask(__name__)
 
 
-@app.route('/')
+@app.route('/add_event')
 def index():
   if 'credentials' not in flask.session:
     return flask.redirect(flask.url_for('oauth2callback'))
@@ -19,9 +21,20 @@ def index():
     return flask.redirect(flask.url_for('oauth2callback'))
   else:
     http_auth = credentials.authorize(httplib2.Http())
-    drive = discovery.build('drive', 'v2', http_auth)
-    files = drive.files().list().execute()
-    return json.dumps(files)
+    service = discovery.build('calendar', 'v3', http_auth)
+    
+    '''now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    print('Getting the upcoming 10 events')
+    eventsResult = service.events().list(
+        calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
+        orderBy='startTime').execute()
+    events = eventsResult.get('items', [])
+    if not events:
+        print('No upcoming events found.')
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        print(start, event['summary'])'''
+    return "done"
 
 
 @app.route('/oauth2callback')
@@ -29,8 +42,8 @@ def oauth2callback():
   print "hi"
   flow = client.flow_from_clientsecrets(
       'client_secret.json',
-      scope='https://www.googleapis.com/auth/drive.metadata.readonly',
-      redirect_uri=flask.url_for('oauth2callback', _external=True))
+      scope='https://www.googleapis.com/auth/calendar.readonly',
+      redirect_uri='http://127.0.0.1:5000/oauth2callback')
   if 'code' not in flask.request.args:
     auth_uri = flow.step1_get_authorize_url()
     return flask.redirect(auth_uri)
