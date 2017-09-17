@@ -17,17 +17,21 @@ app.secret_key = "secret_key"
 def index():
     return "yo this works"
 
-@app.route('/add_event')
-def index():
+def checkCredentials:
     if 'credentials' not in flask.session:
         return flask.redirect(flask.url_for('oauth2callback'))
-        credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
-        if credentials.access_token_expired:
-            return flask.redirect(flask.url_for('oauth2callback'))
-        else:
-            http_auth = credentials.authorize(httplib2.Http())
-            service = discovery.build('calendar', 'v3', http_auth)
+    credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
+    if credentials.access_token_expired:
+        return flask.redirect(flask.url_for('oauth2callback'))
+    else:
+        http_auth = credentials.authorize(httplib2.Http())
+        service = discovery.build('calendar', 'v3', http_auth)
+    return credentials
 
+
+@app.route('/add_event')
+def index():
+    credentials = checkCredentials
 
 @app.route('/oauth2callback')
 def oauth2callback():
