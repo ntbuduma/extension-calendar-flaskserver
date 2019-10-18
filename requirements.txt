@@ -16,5 +16,5 @@ python-dateutil==1.5
 requests==2.18.4
 rsa==3.4.2
 uritemplate==3.0.0
-urllib3==1.22
+urllib3==1.24.2
 Werkzeug==0.12.2
